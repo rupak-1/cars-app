@@ -2,25 +2,17 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function Cars() {
-  /**
-   * Fields required for the car
-        "id",
-        "brand",
-        "name",
-        "releaseYear",
-        "color"
-   */
   const carFormInitialData = {
-    id: 0,
+    id: '',
     name: '',
     brand: '',
     releaseYear: '',
     color: '',
   }
+
   const [carFormData, setCarFormData] = useState(carFormInitialData);
   const [carsData, setCarsData] = useState([])
-  const [refresh, setRefresh] = useState([true])
-  const [successMessage, setSuccessMessage] = useState('')
+  const [fetchMessage, setFetchMessage] = useState('')
 
   useEffect(() => {
     fetch('http://localhost:8000/cars')
@@ -28,11 +20,11 @@ function Cars() {
       .then((result) => {
         setCarsData(result)
       });
-  }, [refresh]);
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setSuccessMessage('');
+    setFetchMessage('');
     setCarFormData({
       ...carFormData,
       [name]: value,
@@ -46,38 +38,45 @@ function Cars() {
      * https://googlechrome.github.io/samples/fetch-api/fetch-post.html
      */
     event.preventDefault();
-    console.log(carFormData);
     fetch("http://localhost:8000/cars", {
       method: "POST",
       body: JSON.stringify(carFormData),
-      headers: { 'Content-Type': 'application/json' },  
+      headers: { 'Content-Type': 'application/json' },
     }).then(res => res.json()).then(car => {
-      if (car.status === 'success'){
-        setSuccessMessage(car.message);
-        setRefresh(!refresh);
+      if (car.status === 'success') {
+        setFetchMessage(car.message);
+        setCarsData([...car.data]);
       }
+      else {
+        setFetchMessage(car.message);
+      }
+      setCarFormData(carFormInitialData);
     });
   }
 
   const handleDelete = (id) => {
     /**
-     * When clicked on a delete button, get the id of the car's delete button clicked
-     * Then use javascript fetch to send DELETE request to NodeJS
+     * When clicked on a delete button, gets the id of the car's delete button clicked
+     * Then uses javascript fetch to send DELETE request to NodeJS
      * https://openjavascript.info/2022/01/03/using-fetch-to-make-get-post-put-and-delete-requests/
      */
-     fetch("http://localhost:8000/cars", {
+
+    fetch("http://localhost:8000/cars", {
       method: "DELETE",
       body: JSON.stringify({
         id: id
       }),
-      headers: { 'Content-Type': 'application/json' },  
-    }).then(res => res.json()).then(car => {
-      console.log(car)
-      if (car.status === 'success'){
-        setSuccessMessage(car.message);
-        setRefresh(!refresh);
-      }
-    });
+      headers: { 'Content-Type': 'application/json' },
+    }).then(res => res.json())
+      .then(car => {
+        if (car.status === 'success') {
+          setFetchMessage(car.message);
+          setCarsData([...car.data]);
+        }
+        else {
+          setFetchMessage(car.message);
+        }
+      });
 
   }
 
@@ -122,7 +121,7 @@ function Cars() {
           <input name='color' type="text" value={carFormData.color} onChange={handleInputChange} />
         </label>
         <input type="submit" value="Submit" />
-        <p>{successMessage}</p>
+        <p>{fetchMessage}</p>
       </form>
       {/** 
            * TODO: Update the code below to see any new proprties added to carFormData
@@ -150,14 +149,14 @@ function Cars() {
            * */}
 
           {carsData.map((car) => {
-            return <tr id={car.id}>
-              <td id={car.id}>{car.id} </td>
-              <td id={car.id}>{car.brand} </td>
-              <td id={car.id}>{car.name} </td>
-              <td id={car.id}>{car.releaseYear} </td>
-              <td id={car.id}>{car.color} </td>
-              <td id={car.id}>✎</td>
-              <td id={car.id} className='delete-button' onClick={() => handleDelete(car.id)}>🗑</td>
+            return <tr key={car.id}>
+              <td>{car.id} </td>
+              <td>{car.brand} </td>
+              <td>{car.name} </td>
+              <td>{car.releaseYear} </td>
+              <td>{car.color} </td>
+              <td>✎</td>
+              <td className='delete-button' onClick={() => handleDelete(car.id)}>🗑</td>
             </tr>
           })}
           {/* <tr>
