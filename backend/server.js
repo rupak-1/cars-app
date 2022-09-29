@@ -57,12 +57,13 @@ app.get('/cars', (req, res) => {
 });
 
 app.post("/cars", (req, res) => {
-    const {id, name, brand, releaseYear} = req.body;
+    const {id, name, brand, releaseYear, color} = req.body;
     const car = {
         id: parseInt(id),
         name: name,
         brand: brand,
         releaseYear: releaseYear,
+        color: color,
     }
     carWithId = carsMockData.filter(car => car.id === id);
     if (carWithId.length > 0){
