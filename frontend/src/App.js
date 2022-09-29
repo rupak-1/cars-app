@@ -22,46 +22,54 @@ function Cars() {
       });
   }, []);
 
+  //helper functions
+
+  //function to setCarFormData based on input
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFetchMessage('');
     setCarFormData({
       ...carFormData,
       [name]: value,
     });
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     /**
      * Gather all the form data to state variable carFormData
      * When the form is submitted POST the data to Backend using fetch post
      * https://googlechrome.github.io/samples/fetch-api/fetch-post.html
      */
     event.preventDefault();
-    fetch("http://localhost:8000/cars", {
+    await fetch("http://localhost:8000/cars", {
       method: "POST",
       body: JSON.stringify(carFormData),
       headers: { 'Content-Type': 'application/json' },
     }).then(res => res.json()).then(car => {
       if (car.status === 'success') {
-        setFetchMessage(car.message);
         setCarsData([...car.data]);
+        setFetchMessage(car.message);
+        setTimeout(() => {
+          setFetchMessage('')
+        }, 1500);
       }
       else {
         setFetchMessage(car.message);
+        setTimeout(() => {
+          setFetchMessage('')
+        }, 1500);
       }
       setCarFormData(carFormInitialData);
     });
   }
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     /**
      * When clicked on a delete button, gets the id of the car's delete button clicked
      * Then uses javascript fetch to send DELETE request to NodeJS
      * https://openjavascript.info/2022/01/03/using-fetch-to-make-get-post-put-and-delete-requests/
      */
 
-    fetch("http://localhost:8000/cars", {
+    await fetch("http://localhost:8000/cars", {
       method: "DELETE",
       body: JSON.stringify({
         id: id
@@ -70,11 +78,17 @@ function Cars() {
     }).then(res => res.json())
       .then(car => {
         if (car.status === 'success') {
-          setFetchMessage(car.message);
           setCarsData([...car.data]);
+          setFetchMessage(car.message);
+          setTimeout(() => {
+            setFetchMessage('')
+          }, 1500);
         }
         else {
           setFetchMessage(car.message);
+          setTimeout(() => {
+            setFetchMessage('')
+          }, 1500);
         }
       });
 
@@ -95,11 +109,6 @@ function Cars() {
   return (
     <div className='cars-from-wrapper'>
       <form id="cars-form" onSubmit={handleSubmit} autoComplete="off">
-        {/** 
-           * TODO: Update the form fields with inputs for 
-           *    ID, Brand, Name, ReleaseYear and Color
-           * Make required changes to  const carFormInitialData
-           * */}
         <label>
           ID:
           <input name='id' type="text" value={carFormData.id} onChange={handleInputChange} />
@@ -123,11 +132,7 @@ function Cars() {
         <input type="submit" value="Submit" />
         <p>{fetchMessage}</p>
       </form>
-      {/** 
-           * TODO: Update the code below to see any new proprties added to carFormData
-           * */}
       <p>ID:{carFormData.id}, name:{carFormData.name}</p>
-
       <h2>Cars Data</h2>
       <table>
         <thead>
@@ -142,12 +147,6 @@ function Cars() {
           </tr>
         </thead>
         <tbody>
-          {/** 
-           * TODO: Replace this code with Data from Node JS GET api data
-           * React documentation: https://reactjs.org/docs/lists-and-keys.html
-           * How to get data from API: https://www.w3schools.com/jsref/api_fetch.asp
-           * */}
-
           {carsData.map((car) => {
             return <tr key={car.id}>
               <td>{car.id} </td>
@@ -159,48 +158,6 @@ function Cars() {
               <td className='delete-button' onClick={() => handleDelete(car.id)}>🗑</td>
             </tr>
           })}
-          {/* <tr>
-            <td>Alfreds Futterkiste</td>
-            <td>Maria Anders</td>
-            <td>Germany</td>
-            <td>✎</td>
-            <td>🗑</td>
-          </tr>
-          <tr>
-            <td>Centro comercial Moctezuma</td>
-            <td>Francisco Chang</td>
-            <td>Mexico</td>
-            <td>✎</td>
-            <td>🗑</td>
-          </tr>
-          <tr>
-            <td>Ernst Handel</td>
-            <td>Roland Mendel</td>
-            <td>Austria</td>
-            <td>✎</td>
-            <td>🗑</td>
-          </tr>
-          <tr>
-            <td>Island Trading</td>
-            <td>Helen Bennett</td>
-            <td>UK</td>
-            <td>✎</td>
-            <td>🗑</td>
-          </tr>
-          <tr>
-            <td>Laughing Bacchus Winecellars</td>
-            <td>Yoshi Tannamuri</td>
-            <td>Canada</td>
-            <td>✎</td>
-            <td>🗑</td>
-          </tr>
-          <tr>
-            <td>Magazzini Alimentari Riuniti</td>
-            <td>Giovanni Rovelli</td>
-            <td>Italy</td>
-            <td>✎</td>
-            <td>🗑</td>
-          </tr> */}
         </tbody>
       </table>
     </div>

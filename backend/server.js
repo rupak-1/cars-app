@@ -60,7 +60,7 @@ app.get('/cars', (req, res) => {
 
 app.post("/cars", (req, res) => {
     const req_car = Object.assign({}, req.body);
-
+    
     if (isNaN(req_car.id)) {
         res.status(500).json({
             status: 'fail',
