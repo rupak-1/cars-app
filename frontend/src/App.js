@@ -12,8 +12,15 @@ function Cars() {
 
   const [carFormData, setCarFormData] = useState(carFormInitialData);
   const [carsData, setCarsData] = useState([])
+
+  //state variable to display the result of calling fetch api
   const [fetchMessage, setFetchMessage] = useState('')
 
+  //state variable to toggle between edit and submit form
+  const [editData, setEditData] = useState(false);
+
+
+  //fetches the data from api at the start of app to display on the table
   useEffect(() => {
     fetch('http://localhost:8000/cars')
       .then(res => res.json())
@@ -35,31 +42,34 @@ function Cars() {
 
   const handleSubmit = async (event) => {
     /**
-     * Gather all the form data to state variable carFormData
-     * When the form is submitted POST the data to Backend using fetch post
+     * When the form is submitted, POSTS the carFormData to Backend using fetch post
      * https://googlechrome.github.io/samples/fetch-api/fetch-post.html
      */
+
     event.preventDefault();
+
     await fetch("http://localhost:8000/cars", {
       method: "POST",
       body: JSON.stringify(carFormData),
       headers: { 'Content-Type': 'application/json' },
-    }).then(res => res.json()).then(car => {
-      if (car.status === 'success') {
-        setCarsData([...car.data]);
-        setFetchMessage(car.message);
-        setTimeout(() => {
-          setFetchMessage('')
-        }, 1500);
-      }
-      else {
-        setFetchMessage(car.message);
-        setTimeout(() => {
-          setFetchMessage('')
-        }, 1500);
-      }
-      setCarFormData(carFormInitialData);
-    });
+    })
+      .then(res => res.json())
+      .then(car => {
+        if (car.status === 'success') {
+          setCarsData([...car.data]);
+          setFetchMessage(car.message);
+          setTimeout(() => {
+            setFetchMessage('')
+          }, 1500);
+        }
+        else {
+          setFetchMessage(car.message);
+          setTimeout(() => {
+            setFetchMessage('')
+          }, 1500);
+        }
+        setCarFormData(carFormInitialData);
+      });
   }
 
   const handleDelete = async (id) => {
@@ -69,11 +79,47 @@ function Cars() {
      * https://openjavascript.info/2022/01/03/using-fetch-to-make-get-post-put-and-delete-requests/
      */
 
+    //clear the input form if delete is pressed in edit mode
+    if (editData) setCarFormData(carFormInitialData);
+
     await fetch("http://localhost:8000/cars", {
       method: "DELETE",
       body: JSON.stringify({
         id: id
       }),
+      headers: { 'Content-Type': 'application/json' },
+    }).then(res => res.json())
+      .then(car => {
+        if (car.status === 'success') {
+          setCarsData([...car.data]);
+          setFetchMessage(car.message);
+          setTimeout(() => {
+            setFetchMessage('')
+          }, 3000);
+        }
+        else {
+          setFetchMessage(car.message);
+          setTimeout(() => {
+            setFetchMessage('')
+          }, 1500);
+        }
+      });
+
+  }
+
+  const handleEdit = async (event) => {
+    /**
+     * Sends the updated data to NodeJS.
+     * https://openjavascript.info/2022/01/03/using-fetch-to-make-get-post-put-and-delete-requests/
+     */
+
+    event.preventDefault();
+    setEditData(false);
+    setCarFormData(carFormInitialData);
+
+    await fetch("http://localhost:8000/cars", {
+      method: "PUT",
+      body: JSON.stringify(carFormData),
       headers: { 'Content-Type': 'application/json' },
     }).then(res => res.json())
       .then(car => {
@@ -94,24 +140,20 @@ function Cars() {
 
   }
 
-  /** 🥳🥳🥳🥳🥳🥳 DOUBLE BONUS POINTS 🥳🥳🥳🥳🥳🥳 */
-  const handleEdit = () => {
-    /**
-     * When clicked on a edit button figure out a way to edit the car data.
-     * Once edited send the updated data to NodeJS.
-     * Then use javascript fetch to send DELETE request to NodeJS
-     * https://openjavascript.info/2022/01/03/using-fetch-to-make-get-post-put-and-delete-requests/
-     */
+  //fills form based on the id of the car to be edited
+  const fillFormWithId = (id) => {
+    setEditData(true);
+    setCarFormData(carsData.find((car) => car.id === id))
   }
-
 
 
   return (
     <div className='cars-from-wrapper'>
-      <form id="cars-form" onSubmit={handleSubmit} autoComplete="off">
+      {/* toggle between submit and update forms */}
+      <form id="cars-form" onSubmit={editData ? handleEdit : handleSubmit} autoComplete="off">
         <label>
           ID:
-          <input name='id' type="text" value={carFormData.id} onChange={handleInputChange} />
+          <input name='id' type="text" value={carFormData.id} onChange={handleInputChange} readOnly={editData} />
         </label>
         <label>
           Name:
@@ -129,10 +171,12 @@ function Cars() {
           Color:
           <input name='color' type="text" value={carFormData.color} onChange={handleInputChange} />
         </label>
-        <input type="submit" value="Submit" />
+        <input id="submit" type="submit" value={editData ? "Update" : "Submit"} />
         <p>{fetchMessage}</p>
       </form>
+
       <p>ID:{carFormData.id}, name:{carFormData.name}</p>
+
       <h2>Cars Data</h2>
       <table>
         <thead>
@@ -154,8 +198,8 @@ function Cars() {
               <td>{car.name} </td>
               <td>{car.releaseYear} </td>
               <td>{car.color} </td>
-              <td>✎</td>
-              <td className='delete-button' onClick={() => handleDelete(car.id)}>🗑</td>
+              <td className='action-button' onClick={() => fillFormWithId(car.id)}>✎</td>
+              <td className='action-button' onClick={() => handleDelete(car.id)}>🗑</td>
             </tr>
           })}
         </tbody>

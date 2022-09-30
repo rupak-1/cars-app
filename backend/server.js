@@ -8,7 +8,6 @@ const app = express();
 app.use(cors())
 app.use(bodyParser.json())
 
-
 let carsMockData = [
     {
         "id": 1,
@@ -60,7 +59,7 @@ app.get('/cars', (req, res) => {
 
 app.post("/cars", (req, res) => {
     const req_car = Object.assign({}, req.body);
-    
+
     if (isNaN(req_car.id)) {
         res.status(500).json({
             status: 'fail',
@@ -98,7 +97,7 @@ app.post("/cars", (req, res) => {
 app.delete('/cars', (req, res) => {
     const id = req.body.id;
     const carWithId = carsMockData.filter(car => car.id === id);
-    console.log(carWithId);
+
     if (carWithId.length > 0) {
         const newCars = carsMockData.filter(car => car.id !== id);
         carsMockData = [...newCars]
@@ -118,9 +117,32 @@ app.delete('/cars', (req, res) => {
 })
 
 
-/** Create PUT API. 
- *  Check if car with id exists. If No return 500 with error 'No car with given id exist'. 
- *  If there is car with the requested id, update that car's data in 'carsMockData' and return 'carsMockData' */
+/* PUT api
+    Checks if car with id exists. If No return 500 with error 'No car with given id exist'. 
+    If there is car with the requested id, updates that car's data in 'carsMockData' and return 'carsMockData' 
+*/
 
+
+app.put('/cars', (req, res) => {
+    const id = req.body.id;
+    const carWithId = carsMockData.filter(car => car.id === id);
+    console.log(carWithId);
+    if (carWithId.length > 0) {
+        const newCars = carsMockData.map((car) => car.id === id ? req.body : car);
+        carsMockData = [...newCars]
+        res.status(200).json({
+            status: 'success',
+            message: 'Car updated!',
+            data: carsMockData
+        })
+    }
+    else {
+        res.status(500).json({
+            status: 'fail',
+            message: 'No car with given id exists'
+        })
+    }
+
+})
 
 app.listen(8000);

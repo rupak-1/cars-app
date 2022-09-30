@@ -54,6 +54,6 @@ input[type=submit]:hover {
   padding: 20px;
 }
 
-.delete-button {
+.action-button {
   cursor: pointer;
 }
